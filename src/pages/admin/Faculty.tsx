@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,16 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Edit, Users, Mail, Phone } from "lucide-react";
+import { Plus, Trash2, Edit, Users, Mail, Phone, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-interface Faculty {
+interface FacultyMember {
   id: string;
   name: string;
-  designation: string;
+  designation: string | null;
   department: string;
-  email: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
 }
 
 const departments = [
@@ -36,7 +37,9 @@ const departments = [
 ];
 
 const Faculty = () => {
-  const [facultyList, setFacultyList] = useState<Faculty[]>([]);
+  const [facultyList, setFacultyList] = useState<FacultyMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -47,49 +50,106 @@ const Faculty = () => {
     phone: "",
   });
 
-  const handleSubmit = () => {
+  const fetchFaculty = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("faculty")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      setFacultyList(data || []);
+    } catch (error) {
+      console.error("Error fetching faculty:", error);
+      toast.error("Failed to fetch faculty");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaculty();
+  }, []);
+
+  const handleSubmit = async () => {
     if (!formData.name || !formData.department) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    if (editingId) {
-      setFacultyList(
-        facultyList.map((f) =>
-          f.id === editingId ? { ...f, ...formData } : f
-        )
-      );
-      toast.success("Faculty updated");
-    } else {
-      const newFaculty: Faculty = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setFacultyList([...facultyList, newFaculty]);
-      toast.success("Faculty added");
-    }
+    setIsSubmitting(true);
 
-    setFormData({ name: "", designation: "", department: "", email: "", phone: "" });
-    setIsEditing(false);
-    setEditingId(null);
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("faculty")
+          .update({
+            name: formData.name,
+            designation: formData.designation || null,
+            department: formData.department,
+            email: formData.email || null,
+            phone: formData.phone || null,
+          })
+          .eq("id", editingId);
+
+        if (error) throw error;
+        toast.success("Faculty updated");
+      } else {
+        const { error } = await supabase.from("faculty").insert({
+          name: formData.name,
+          designation: formData.designation || null,
+          department: formData.department,
+          email: formData.email || null,
+          phone: formData.phone || null,
+        });
+
+        if (error) throw error;
+        toast.success("Faculty added");
+      }
+
+      setFormData({ name: "", designation: "", department: "", email: "", phone: "" });
+      setIsEditing(false);
+      setEditingId(null);
+      fetchFaculty();
+    } catch (error) {
+      console.error("Error saving faculty:", error);
+      toast.error("Failed to save faculty");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleEdit = (faculty: Faculty) => {
+  const handleEdit = (faculty: FacultyMember) => {
     setFormData({
       name: faculty.name,
-      designation: faculty.designation,
+      designation: faculty.designation || "",
       department: faculty.department,
-      email: faculty.email,
-      phone: faculty.phone,
+      email: faculty.email || "",
+      phone: faculty.phone || "",
     });
     setEditingId(faculty.id);
     setIsEditing(true);
   };
 
-  const handleDelete = (id: string) => {
-    setFacultyList(facultyList.filter((f) => f.id !== id));
-    toast.success("Faculty removed");
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("faculty").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Faculty removed");
+      fetchFaculty();
+    } catch (error) {
+      console.error("Error deleting faculty:", error);
+      toast.error("Failed to delete faculty");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -192,8 +252,15 @@ const Faculty = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button onClick={handleSubmit}>
-                  {editingId ? "Update" : "Add"} Faculty
+                <Button onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>{editingId ? "Update" : "Add"} Faculty</>
+                  )}
                 </Button>
                 <Button
                   variant="outline"

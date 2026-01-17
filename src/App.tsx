@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -36,11 +37,14 @@ import Courses from "./pages/academics/Courses";
 
 // Admin Pages
 import AdminLayout from "./components/admin/AdminLayout";
+import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ContentEditor from "./pages/admin/ContentEditor";
 import Announcements from "./pages/admin/Announcements";
 import Faculty from "./pages/admin/Faculty";
 import Settings from "./pages/admin/Settings";
+import UsersManagement from "./pages/admin/UsersManagement";
 
 const queryClient = new QueryClient();
 
@@ -50,48 +54,54 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* About Routes */}
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/about/governing-body" element={<GoverningBody />} />
-          <Route path="/about/administration" element={<Administration />} />
-          <Route path="/about/statutory-committee" element={<StatutoryCommittee />} />
-          <Route path="/about/academic-council" element={<AcademicCouncil />} />
-          <Route path="/about/iiic" element={<IIIC />} />
-          <Route path="/about/iqac" element={<IQAC />} />
-          <Route path="/about/life-at-kpt" element={<LifeAtKPT />} />
-          
-          {/* Department Routes */}
-          <Route path="/departments/cse" element={<CSE />} />
-          <Route path="/departments/automobile" element={<Automobile />} />
-          <Route path="/departments/chemical" element={<Chemical />} />
-          <Route path="/departments/civil" element={<Civil />} />
-          <Route path="/departments/ece" element={<ECE />} />
-          <Route path="/departments/eee" element={<EEE />} />
-          <Route path="/departments/mechanical" element={<Mechanical />} />
-          <Route path="/departments/polymer" element={<Polymer />} />
-          <Route path="/departments/science" element={<Science />} />
-          
-          {/* Academic Routes */}
-          <Route path="/academics/fee-structure" element={<FeeStructure />} />
-          <Route path="/academics/time-table" element={<TimeTable />} />
-          <Route path="/academics/calendar" element={<Calendar />} />
-          <Route path="/academics/curriculum" element={<Curriculum />} />
-          <Route path="/academics/courses" element={<Courses />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path=":section/:page" element={<ContentEditor />} />
-            <Route path="announcements" element={<Announcements />} />
-            <Route path="faculty" element={<Faculty />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            
+            {/* About Routes */}
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/about/governing-body" element={<GoverningBody />} />
+            <Route path="/about/administration" element={<Administration />} />
+            <Route path="/about/statutory-committee" element={<StatutoryCommittee />} />
+            <Route path="/about/academic-council" element={<AcademicCouncil />} />
+            <Route path="/about/iiic" element={<IIIC />} />
+            <Route path="/about/iqac" element={<IQAC />} />
+            <Route path="/about/life-at-kpt" element={<LifeAtKPT />} />
+            
+            {/* Department Routes */}
+            <Route path="/departments/cse" element={<CSE />} />
+            <Route path="/departments/automobile" element={<Automobile />} />
+            <Route path="/departments/chemical" element={<Chemical />} />
+            <Route path="/departments/civil" element={<Civil />} />
+            <Route path="/departments/ece" element={<ECE />} />
+            <Route path="/departments/eee" element={<EEE />} />
+            <Route path="/departments/mechanical" element={<Mechanical />} />
+            <Route path="/departments/polymer" element={<Polymer />} />
+            <Route path="/departments/science" element={<Science />} />
+            
+            {/* Academic Routes */}
+            <Route path="/academics/fee-structure" element={<FeeStructure />} />
+            <Route path="/academics/time-table" element={<TimeTable />} />
+            <Route path="/academics/calendar" element={<Calendar />} />
+            <Route path="/academics/curriculum" element={<Curriculum />} />
+            <Route path="/academics/courses" element={<Courses />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<ProtectedAdminRoute />}>
+              <Route element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path=":section/:page" element={<ContentEditor />} />
+                <Route path="announcements" element={<Announcements />} />
+                <Route path="faculty" element={<Faculty />} />
+                <Route path="users" element={<UsersManagement />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap,
@@ -15,9 +15,19 @@ import {
   LogOut,
   Menu,
   X,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   label: string;
@@ -70,6 +80,7 @@ const navigation: NavItem[] = [
   },
   { label: "Announcements", href: "/admin/announcements", icon: <Bell className="w-5 h-5" /> },
   { label: "Faculty", href: "/admin/faculty", icon: <Users className="w-5 h-5" /> },
+  { label: "Users", href: "/admin/users", icon: <UserPlus className="w-5 h-5" /> },
   { label: "Settings", href: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
@@ -77,6 +88,8 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -87,6 +100,13 @@ const AdminLayout = () => {
   const isActive = (href: string) => location.pathname === href;
   const isChildActive = (children?: { href: string }[]) =>
     children?.some((child) => location.pathname === child.href);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/admin/login");
+  };
+
+  const userInitial = user?.email?.charAt(0).toUpperCase() || "A";
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -213,12 +233,31 @@ const AdminLayout = () => {
           </Button>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="w-5 h-5" />
-            </Button>
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-              A
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 hover:bg-muted px-2 py-1 rounded-lg transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                    {userInitial}
+                  </div>
+                  <span className="text-sm font-medium text-foreground hidden md:block">
+                    {user?.email}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{user?.email}</span>
+                    <span className="text-xs text-muted-foreground">Administrator</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
