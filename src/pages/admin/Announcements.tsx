@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,79 +6,132 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Edit, Bell, Calendar } from "lucide-react";
+import { Plus, Trash2, Edit, Bell, Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Announcement {
   id: string;
   title: string;
   content: string;
-  date: string;
-  urgent: boolean;
+  date: string | null;
+  is_urgent: boolean;
+  is_published: boolean;
 }
 
 const Announcements = () => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([
-    {
-      id: "1",
-      title: "Admission Open 2024-25",
-      content: "Applications are now open for all diploma programs.",
-      date: "2024-01-15",
-      urgent: true,
-    },
-  ]);
-
+  const { user } = useAuth();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     date: "",
-    urgent: false,
+    is_urgent: false,
   });
 
-  const handleSubmit = () => {
+  const fetchAnnouncements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAnnouncements(data || []);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      toast.error("Failed to fetch announcements");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  const handleSubmit = async () => {
     if (!formData.title || !formData.content) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    if (editingId) {
-      setAnnouncements(
-        announcements.map((a) =>
-          a.id === editingId ? { ...a, ...formData } : a
-        )
-      );
-      toast.success("Announcement updated");
-    } else {
-      const newAnnouncement: Announcement = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setAnnouncements([newAnnouncement, ...announcements]);
-      toast.success("Announcement added");
-    }
+    setIsSubmitting(true);
 
-    setFormData({ title: "", content: "", date: "", urgent: false });
-    setIsEditing(false);
-    setEditingId(null);
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("announcements")
+          .update({
+            title: formData.title,
+            content: formData.content,
+            date: formData.date || null,
+            is_urgent: formData.is_urgent,
+          })
+          .eq("id", editingId);
+
+        if (error) throw error;
+        toast.success("Announcement updated");
+      } else {
+        const { error } = await supabase.from("announcements").insert({
+          title: formData.title,
+          content: formData.content,
+          date: formData.date || null,
+          is_urgent: formData.is_urgent,
+          created_by: user?.id,
+        });
+
+        if (error) throw error;
+        toast.success("Announcement added");
+      }
+
+      setFormData({ title: "", content: "", date: "", is_urgent: false });
+      setIsEditing(false);
+      setEditingId(null);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Error saving announcement:", error);
+      toast.error("Failed to save announcement");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEdit = (announcement: Announcement) => {
     setFormData({
       title: announcement.title,
       content: announcement.content,
-      date: announcement.date,
-      urgent: announcement.urgent,
+      date: announcement.date || "",
+      is_urgent: announcement.is_urgent,
     });
     setEditingId(announcement.id);
     setIsEditing(true);
   };
 
-  const handleDelete = (id: string) => {
-    setAnnouncements(announcements.filter((a) => a.id !== id));
-    toast.success("Announcement deleted");
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("announcements").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Announcement deleted");
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      toast.error("Failed to delete announcement");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -150,23 +203,30 @@ const Announcements = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Switch
-                  checked={formData.urgent}
+                  checked={formData.is_urgent}
                   onCheckedChange={(checked) =>
-                    setFormData({ ...formData, urgent: checked })
+                    setFormData({ ...formData, is_urgent: checked })
                   }
                 />
                 <Label>Mark as Urgent</Label>
               </div>
               <div className="flex gap-3">
-                <Button onClick={handleSubmit}>
-                  {editingId ? "Update" : "Add"} Announcement
+                <Button onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>{editingId ? "Update" : "Add"} Announcement</>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setIsEditing(false);
                     setEditingId(null);
-                    setFormData({ title: "", content: "", date: "", urgent: false });
+                    setFormData({ title: "", content: "", date: "", is_urgent: false });
                   }}
                 >
                   Cancel
@@ -200,7 +260,7 @@ const Announcements = () => {
                 <CardContent className="p-4 flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      {announcement.urgent && (
+                      {announcement.is_urgent && (
                         <span className="px-2 py-0.5 text-xs font-medium bg-destructive text-destructive-foreground rounded">
                           Urgent
                         </span>
