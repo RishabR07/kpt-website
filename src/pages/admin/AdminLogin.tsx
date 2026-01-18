@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { GraduationCap, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { z } from "zod";
+import { CheckCircle2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -17,11 +18,14 @@ const loginSchema = z.object({
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { signIn, user, isAdmin, isLoading: authLoading } = useAuth();
+  const { signIn, signUp, user, isAdmin, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Redirect if already logged in as admin
   if (!authLoading && user && isAdmin) {
@@ -32,6 +36,7 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
 
     // Validate input
     const validation = loginSchema.safeParse({ email, password });
@@ -43,19 +48,32 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const { error: signInError } = await signIn(email, password);
-      
-      if (signInError) {
-        if (signInError.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password. Please try again.");
-        } else {
-          setError(signInError.message);
+      if (isSignUp) {
+        const { error: signUpError } = await signUp(email, password, fullName);
+        
+        if (signUpError) {
+          setError(signUpError.message);
+          return;
         }
-        return;
-      }
 
-      // Navigate will happen automatically via auth state change
-      navigate("/admin", { replace: true });
+        setSuccessMessage("Account created successfully! You can now sign in.");
+        setIsSignUp(false);
+        setPassword("");
+      } else {
+        const { error: signInError } = await signIn(email, password);
+        
+        if (signInError) {
+          if (signInError.message.includes("Invalid login credentials")) {
+            setError("Invalid email or password. Please try again.");
+          } else {
+            setError(signInError.message);
+          }
+          return;
+        }
+
+        // Navigate will happen automatically via auth state change
+        navigate("/admin", { replace: true });
+      }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
@@ -75,9 +93,13 @@ const AdminLogin = () => {
             <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
               <GraduationCap className="w-10 h-10 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-display">Admin Login</CardTitle>
+            <CardTitle className="text-2xl font-display">
+              {isSignUp ? "Create Account" : "Admin Login"}
+            </CardTitle>
             <CardDescription>
-              Sign in to access the KPT admin panel
+              {isSignUp 
+                ? "Sign up to access the KPT admin panel" 
+                : "Sign in to access the KPT admin panel"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -87,6 +109,29 @@ const AdminLogin = () => {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
+              )}
+
+              {successMessage && (
+                <Alert className="border-green-500 bg-green-50 text-green-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>{successMessage}</AlertDescription>
+                </Alert>
+              )}
+
+              {isSignUp && (
+                <div>
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="John Doe"
+                    className="mt-1"
+                    disabled={isLoading}
+                    autoComplete="name"
+                  />
+                </div>
               )}
 
               <div>
@@ -125,12 +170,28 @@ const AdminLogin = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing in...
+                    {isSignUp ? "Creating account..." : "Signing in..."}
                   </>
                 ) : (
-                  "Sign In"
+                  isSignUp ? "Create Account" : "Sign In"
                 )}
               </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError(null);
+                    setSuccessMessage(null);
+                  }}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {isSignUp 
+                    ? "Already have an account? Sign in" 
+                    : "Don't have an account? Sign up"}
+                </button>
+              </div>
             </form>
 
             <div className="mt-6 text-center">
