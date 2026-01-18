@@ -182,6 +182,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_initial_admin: { Args: { email_address: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
