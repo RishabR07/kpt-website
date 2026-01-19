@@ -49,6 +49,45 @@ const navigation: NavItem[] = [
       { label: "Courses Offered", href: "/academics/courses" },
     ],
   },
+  {
+    label: "Admissions",
+    children: [
+      { label: "Admission Procedure", href: "/admissions/procedure" },
+      { label: "Online Application", href: "/admissions/online-application" },
+      { label: "Fee Structure", href: "/admissions/fee-structure" },
+      { label: "Scholarships", href: "/admissions/scholarships" },
+    ],
+  },
+  {
+    label: "Student Life",
+    children: [
+      { label: "Anti Ragging", href: "/student-life/anti-ragging" },
+      { label: "Achievements", href: "/student-life/achievements" },
+      { label: "Alumni Clubs & Associations", href: "/student-life/alumni-clubs" },
+      { label: "Student Union", href: "/student-life/student-union" },
+    ],
+  },
+  {
+    label: "Training & Placements",
+    children: [
+      { label: "Placement Events", href: "/placements/events" },
+      { label: "Contact", href: "/placements/contact" },
+    ],
+  },
+  {
+    label: "Information",
+    children: [
+      { label: "Events", href: "/information/events" },
+      { label: "College Circulars", href: "/information/college-circulars" },
+      { label: "Contact", href: "/information/contact" },
+      { label: "Departmental Circulars", href: "/information/departmental-circulars" },
+      { label: "DTEK", href: "/information/dtek" },
+      { label: "Mandatory Files", href: "/information/mandatory-files" },
+      { label: "Procurement", href: "/information/procurement" },
+      { label: "CCTEK", href: "/information/cctek" },
+      { label: "FAQ", href: "/information/faq" },
+    ],
+  },
 ];
 
 const Header = () => {
