@@ -171,7 +171,7 @@ const Header = () => {
             <span className="hidden sm:inline">✉️ info@kpt.edu.in</span>
           </div>
           <Link 
-            to="/admin" 
+            to="/admin/login" 
             className="hover:text-secondary transition-colors font-medium"
           >
             Admin Login
