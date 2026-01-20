@@ -1,26 +1,13 @@
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/layout/PageHeader";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const OnlineApplication = () => {
   return (
-    <MainLayout>
-      <PageHeader
-        title="Online Application"
-        subtitle="Apply online for admission"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Admissions", href: "/admissions" },
-          { label: "Online Application" },
-        ]}
-      />
-      <div className="container mx-auto px-4 py-12">
-        <div className="prose prose-lg max-w-none">
-          <p className="text-muted-foreground">
-            Online application form will be displayed here.
-          </p>
-        </div>
-      </div>
-    </MainLayout>
+    <DynamicContentPage
+      pageSlug="online-application"
+      fallbackTitle="Online Application"
+      fallbackSubtitle="Apply online for admission"
+      breadcrumbs={[{ label: "Admissions" }, { label: "Online Application" }]}
+    />
   );
 };
 

@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdminCheckPending, setIsAdminCheckPending] = useState(false);
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -41,38 +42,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer admin check with setTimeout to avoid deadlock
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminRole(session.user.id).then(setIsAdmin);
+          setIsAdminCheckPending(true);
+          // Use setTimeout to avoid Supabase auth deadlock
+          setTimeout(async () => {
+            if (!isMounted) return;
+            const adminStatus = await checkAdminRole(session.user.id);
+            if (isMounted) {
+              setIsAdmin(adminStatus);
+              setIsAdminCheckPending(false);
+              setIsLoading(false);
+            }
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsAdminCheckPending(false);
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminRole(session.user.id).then(setIsAdmin);
+        setIsAdminCheckPending(true);
+        const adminStatus = await checkAdminRole(session.user.id);
+        if (isMounted) {
+          setIsAdmin(adminStatus);
+          setIsAdminCheckPending(false);
+        }
       }
       
-      setIsLoading(false);
+      if (isMounted) {
+        setIsLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -104,13 +128,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAdmin(false);
   };
 
+  // Include admin check pending in loading state to prevent flash
+  const effectiveLoading = isLoading || isAdminCheckPending;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         session,
         isAdmin,
-        isLoading,
+        isLoading: effectiveLoading,
         signIn,
         signUp,
         signOut,

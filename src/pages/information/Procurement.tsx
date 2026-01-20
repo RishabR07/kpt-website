@@ -1,26 +1,13 @@
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/layout/PageHeader";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const Procurement = () => {
   return (
-    <MainLayout>
-      <PageHeader
-        title="Procurement"
-        subtitle="Tenders and procurement notices"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Information", href: "/information" },
-          { label: "Procurement" },
-        ]}
-      />
-      <div className="container mx-auto px-4 py-12">
-        <div className="prose prose-lg max-w-none">
-          <p className="text-muted-foreground">
-            Procurement information will be displayed here.
-          </p>
-        </div>
-      </div>
-    </MainLayout>
+    <DynamicContentPage
+      pageSlug="procurement"
+      fallbackTitle="Procurement"
+      fallbackSubtitle="Tenders and procurement notices"
+      breadcrumbs={[{ label: "Information" }, { label: "Procurement" }]}
+    />
   );
 };
 

@@ -1,26 +1,13 @@
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/layout/PageHeader";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const CollegeCirculars = () => {
   return (
-    <MainLayout>
-      <PageHeader
-        title="College Circulars"
-        subtitle="Official college announcements"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Information", href: "/information" },
-          { label: "College Circulars" },
-        ]}
-      />
-      <div className="container mx-auto px-4 py-12">
-        <div className="prose prose-lg max-w-none">
-          <p className="text-muted-foreground">
-            College circulars will be displayed here.
-          </p>
-        </div>
-      </div>
-    </MainLayout>
+    <DynamicContentPage
+      pageSlug="college-circulars"
+      fallbackTitle="College Circulars"
+      fallbackSubtitle="Official college announcements"
+      breadcrumbs={[{ label: "Information" }, { label: "College Circulars" }]}
+    />
   );
 };
 

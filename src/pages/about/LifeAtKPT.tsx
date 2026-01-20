@@ -1,10 +1,11 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const LifeAtKPT = () => {
   return (
-    <ContentPage
-      title="Life at KPT"
-      subtitle="Experience the vibrant campus life, events, and student activities"
+    <DynamicContentPage
+      pageSlug="life-at-kpt"
+      fallbackTitle="Life at KPT"
+      fallbackSubtitle="Experience the vibrant campus life, events, and student activities"
       breadcrumbs={[{ label: "About", href: "/about" }, { label: "Life at KPT" }]}
     />
   );
