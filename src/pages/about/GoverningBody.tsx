@@ -1,10 +1,11 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const GoverningBody = () => {
   return (
-    <ContentPage
-      title="Governing Body"
-      subtitle="Meet the distinguished members who guide our institution's strategic direction"
+    <DynamicContentPage
+      pageSlug="governing-body"
+      fallbackTitle="Governing Body"
+      fallbackSubtitle="Meet the distinguished members who guide our institution's strategic direction"
       breadcrumbs={[{ label: "About", href: "/about" }, { label: "Governing Body" }]}
     />
   );

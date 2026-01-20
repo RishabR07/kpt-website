@@ -1,10 +1,11 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const Administration = () => {
   return (
-    <ContentPage
-      title="Administration"
-      subtitle="Our administrative team ensuring smooth operations and academic excellence"
+    <DynamicContentPage
+      pageSlug="administration"
+      fallbackTitle="Administration"
+      fallbackSubtitle="Our administrative team ensuring smooth operations and academic excellence"
       breadcrumbs={[{ label: "About", href: "/about" }, { label: "Administration" }]}
     />
   );

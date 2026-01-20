@@ -1,11 +1,12 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const FeeStructure = () => {
   return (
-    <ContentPage
-      title="Fee Structure"
-      subtitle="Transparent fee details for all diploma programs"
-      breadcrumbs={[{ label: "Academics", href: "/academics/fee-structure" }, { label: "Fee Structure" }]}
+    <DynamicContentPage
+      pageSlug="fee-structure"
+      fallbackTitle="Fee Structure"
+      fallbackSubtitle="Transparent fee details for all diploma programs"
+      breadcrumbs={[{ label: "Academics" }, { label: "Fee Structure" }]}
     />
   );
 };

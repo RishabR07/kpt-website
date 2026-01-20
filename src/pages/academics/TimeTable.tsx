@@ -1,11 +1,12 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const TimeTable = () => {
   return (
-    <ContentPage
-      title="Time Table"
-      subtitle="Class schedules and timetables for all departments"
-      breadcrumbs={[{ label: "Academics", href: "/academics/time-table" }, { label: "Time Table" }]}
+    <DynamicContentPage
+      pageSlug="time-table"
+      fallbackTitle="Time Table"
+      fallbackSubtitle="Class schedules and timetables for all departments"
+      breadcrumbs={[{ label: "Academics" }, { label: "Time Table" }]}
     />
   );
 };

@@ -1,11 +1,12 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const Curriculum = () => {
   return (
-    <ContentPage
-      title="Curriculum"
-      subtitle="Detailed syllabus and course structure for all programs"
-      breadcrumbs={[{ label: "Academics", href: "/academics/curriculum" }, { label: "Curriculum" }]}
+    <DynamicContentPage
+      pageSlug="curriculum"
+      fallbackTitle="Curriculum"
+      fallbackSubtitle="Detailed syllabus and course structure for all programs"
+      breadcrumbs={[{ label: "Academics" }, { label: "Curriculum" }]}
     />
   );
 };

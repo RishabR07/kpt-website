@@ -1,11 +1,12 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const Calendar = () => {
   return (
-    <ContentPage
-      title="Academic Calendar"
-      subtitle="Important dates, events, and examination schedules"
-      breadcrumbs={[{ label: "Academics", href: "/academics/calendar" }, { label: "Academic Calendar" }]}
+    <DynamicContentPage
+      pageSlug="calendar"
+      fallbackTitle="Academic Calendar"
+      fallbackSubtitle="Important dates, events, and examination schedules"
+      breadcrumbs={[{ label: "Academics" }, { label: "Academic Calendar" }]}
     />
   );
 };

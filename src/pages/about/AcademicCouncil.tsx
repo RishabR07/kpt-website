@@ -1,10 +1,11 @@
-import ContentPage from "@/components/ContentPage";
+import DynamicContentPage from "@/components/DynamicContentPage";
 
 const AcademicCouncil = () => {
   return (
-    <ContentPage
-      title="Academic Council"
-      subtitle="The academic governing body overseeing curriculum and standards"
+    <DynamicContentPage
+      pageSlug="academic-council"
+      fallbackTitle="Academic Council"
+      fallbackSubtitle="The academic governing body overseeing curriculum and standards"
       breadcrumbs={[{ label: "About", href: "/about" }, { label: "Academic Council" }]}
     />
   );

@@ -7,16 +7,24 @@ interface Breadcrumb {
   href?: string;
 }
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   subtitle?: string;
   breadcrumbs?: Breadcrumb[];
+  backgroundImage?: string;
 }
 
-const PageHeader = ({ title, subtitle, breadcrumbs }: PageHeaderProps) => {
+const PageHeader = ({ title, subtitle, breadcrumbs, backgroundImage }: PageHeaderProps) => {
   return (
-    <div className="bg-primary text-primary-foreground py-12 md:py-16">
-      <div className="container mx-auto px-4">
+    <div 
+      className="bg-primary text-primary-foreground py-12 md:py-16 relative overflow-hidden"
+      style={backgroundImage ? {
+        backgroundImage: `linear-gradient(to right, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7)), url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      } : undefined}
+    >
+      <div className="container mx-auto px-4 relative z-10">
         {/* Breadcrumbs */}
         {breadcrumbs && (
           <motion.nav
